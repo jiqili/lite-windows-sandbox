@@ -2,7 +2,20 @@
 
 Runs native Windows programs as a dedicated non-admin local account. `setup` requests UAC to create the account and protect its machine-scope DPAPI credentials, then installs Node and Pi as that account without elevation. The host user can add a workspace with `add`, or let `pi <workspace>` add it automatically, without UAC.
 
-## Build and try
+## Install
+
+On Windows x64, install from npm and run from a host PowerShell:
+
+```powershell
+npm install -g lite-windows-sandbox
+pi-windows-sandbox setup
+pi-windows-sandbox login openrouter
+pi-windows-sandbox pi C:\Users\YourName\project
+```
+
+If Pi is already installed on the host, `pi install npm:lite-windows-sandbox` also installs the package. Run `/sandbox` in the host Pi to see the path to the packaged executable, then run that executable from a host PowerShell. `pi install` does not replace the already-running host Pi; only the packaged executable starts a Pi session as the sandbox account. The Pi package's `/sandbox` command only prints instructions. The `/login` guard is embedded in the executable and loads only in sandbox Pi.
+
+## Build and try from source
 
 Requires Rust and an NTFS project directory **inside** the host user's profile. Clone the repository and run from an ordinary user terminal:
 
@@ -49,7 +62,7 @@ The launcher flushes each TUI output chunk, reads Windows console keystrokes as 
 
 The original host-side attempt to attach ConPTY through `CreateProcessWithLogonW` returned Windows error 87. Running the helper with `CreateProcessWithLogonW` and then creating ConPTY/starting Pi with `CreateProcessW` inside that account works.
 
-For other users, distribute the compiled Windows `pi-windows-sandbox.exe` as a host-side launcher. They run `setup` once, then `pi <project>` from their terminal; `add` remains available for registering projects separately. Node and Pi are installed into their own sandbox account during setup; they do not need to install Pi or Node into the host account. This is not a `pi install` extension: code loaded only after Pi starts cannot establish the whole-process sandbox boundary.
+The npm package bundles the compiled Windows `pi-windows-sandbox.exe` as a host-side launcher. Users run `setup` once, then `pi <project>` from their terminal; `add` remains available for registering projects separately. Node and Pi are installed into their own sandbox account during setup. The `npm install` route needs Node/npm on the host; the `pi install` route needs a host Pi for installation. The Pi extension itself does not establish the whole-process sandbox boundary.
 
 ## Host-side provider login
 
@@ -80,4 +93,4 @@ The report must show the sandbox SID and workspace read/write as `true`. Profile
 
 ## Current scope
 
-This is a host launcher for Pi's native TUI, not a `pi install` package. Native TUI, terminal input, and live host-managed provider requests have been exercised. The `/login` guard has not yet been verified in an interactive session, and bootstrap does not currently pin a Pi version. **The current prototype does not guarantee that non-workspace host files are unreadable**: ACLs already granted to Windows groups may still permit access. It does not set up a network firewall or reset the sandbox account's profile between sessions. `icacls` applies the workspace grant recursively; do not use an unreviewed workspace with junctions or links to private files. A failed `add` can leave partial ACL grants, and there is not yet a `remove` command. Previous builds may already have added an explicit deny ACE for the sandbox SID on the host profile; this build does not remove it. Repeating `setup` rotates the password; use `bootstrap` alone to retry installing Node or Pi. If initial setup fails after account creation but before credentials are saved, manual account recovery is needed. Existing single-workspace credentials from the earlier prototype require manual migration and ACL cleanup.
+This is a host launcher for Pi's native TUI, with a Pi package that helps locate the launcher. Native TUI, terminal input, and live host-managed provider requests have been exercised. The `/login` guard has not yet been verified in an interactive session, and bootstrap does not currently pin a Pi version. **The current prototype does not guarantee that non-workspace host files are unreadable**: ACLs already granted to Windows groups may still permit access. It does not set up a network firewall or reset the sandbox account's profile between sessions. `icacls` applies the workspace grant recursively; do not use an unreviewed workspace with junctions or links to private files. A failed `add` can leave partial ACL grants, and there is not yet a `remove` command. Previous builds may already have added an explicit deny ACE for the sandbox SID on the host profile; this build does not remove it. Repeating `setup` rotates the password; use `bootstrap` alone to retry installing Node or Pi. If initial setup fails after account creation but before credentials are saved, manual account recovery is needed. Existing single-workspace credentials from the earlier prototype require manual migration and ACL cleanup.

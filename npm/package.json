@@ -1,0 +1,29 @@
+{
+  "name": "lite-windows-sandbox",
+  "version": "0.1.0",
+  "description": "Run Pi under a separate Windows account with host-managed API keys",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jiqili/lite-windows-sandbox.git"
+  },
+  "homepage": "https://github.com/jiqili/lite-windows-sandbox#readme",
+  "keywords": ["pi-package", "pi", "windows", "sandbox"],
+  "type": "module",
+  "os": ["win32"],
+  "cpu": ["x64"],
+  "bin": {
+    "pi-windows-sandbox": "bin/cli.js"
+  },
+  "pi": {
+    "extensions": ["./extensions/launcher.js"]
+  },
+  "files": [
+    "bin/cli.js",
+    "extensions/launcher.js",
+    "native/pi-windows-sandbox.exe"
+  ],
+  "scripts": {
+    "prepack": "node ./scripts/prepare.mjs"
+  }
+}
